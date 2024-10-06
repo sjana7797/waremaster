@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductStatus {
+  PUBLISHED
+  DRAFT
+  ARCHIVED
+}
+
+model Product {
+  id                       Int                     @id @default(autoincrement())
+  name                     String
+  description              String                  @default("")
+  sku                      Int                     @unique
+  slug                     String                  @unique
+  sales                    Int                     @default(0)
+  cost_price               Float
+  web_product_id           String?
+  amazon_id                String?
+  stocks                   Int                     @default(0)
+  in_stock                 Boolean                 @default(false)
+  status                   ProductStatus           @default(DRAFT)
+  image                    String
+  created_at               DateTime                @default(now()) @db.Timestamptz(3)
+  updated_at               DateTime                @updatedAt @db.Timestamptz(3)
+  product_on_image_gallery ProductOnImageGallery[]
+}
+
+model ProductOnImageGallery {
+  image_gallery_id Int
+  product_id       Int
+  product          Product      @relation(fields: [product_id], references: [id])
+  image_gallery    ImageGallery @relation(fields: [image_gallery_id], references: [id])
+
+  @@id([image_gallery_id, product_id])
+}
+
+model ImageGallery {
+  id                       Int                     @id @default(autoincrement())
+  image                    String
+  created_at               DateTime                @default(now()) @db.Timestamptz(3)
+  updated_at               DateTime                @updatedAt @db.Timestamptz(3)
+  product_on_image_gallery ProductOnImageGallery[]
+}
+
+model User {
+  id   String @id
+  name String
+}
